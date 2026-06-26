@@ -1,0 +1,677 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Directorio Académico</title>
+    <style>
+        :root {
+            --primary-color: #0066cc;
+            --primary-dark: #004494;
+            --bg-color: #f4f6f9;
+            --sidebar-bg: #1e293b;
+            --sidebar-text: #f8fafc;
+            --text-color: #334155;
+            --border-color: #e2e8f0;
+            --success-color: #10b981;
+            --error-color: #ef4444;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            display: flex;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            min-height: 100vh;
+        }
+
+        /* Menú Lateral */
+        aside {
+            width: 260px;
+            background-color: var(--sidebar-bg);
+            color: var(--sidebar-text);
+            padding: 2rem 1rem;
+            display: flex;
+            flex-direction: column;
+            gap: 2rem;
+            position: fixed;
+            height: 100vh;
+        }
+
+        aside h1 {
+            font-size: 1.25rem;
+            font-weight: 600;
+            text-align: center;
+            border-bottom: 1px solid #334155;
+            padding-bottom: 1rem;
+        }
+
+        .nav-links {
+            list-style: none;
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .nav-links button {
+            width: 100%;
+            background: none;
+            border: none;
+            color: #94a3b8;
+            padding: 0.75rem 1rem;
+            text-align: left;
+            font-size: 1rem;
+            cursor: pointer;
+            border-radius: 0.375rem;
+            transition: all 0.2s;
+        }
+
+        .nav-links button:hover, .nav-links button.active {
+            background-color: var(--primary-color);
+            color: white;
+        }
+
+        /* Contenedor Principal */
+        main {
+            margin-left: 260px;
+            flex-grow: 1;
+            padding: 2rem;
+            max-width: 1200px;
+        }
+
+        /* Sistema de Alertas */
+        #alert-container {
+            position: fixed;
+            top: 1rem;
+            right: 1rem;
+            z-index: 1000;
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .alert {
+            padding: 1rem 1.5rem;
+            border-radius: 0.375rem;
+            color: white;
+            font-weight: 500;
+            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);
+            animation: slideIn 0.3s ease-out;
+            min-width: 300px;
+        }
+        .alert.success { background-color: var(--success-color); }
+        .alert.error { background-color: var(--error-color); }
+
+        @keyframes slideIn {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+
+        /* Vistas y Tarjetas */
+        .view-section {
+            display: none;
+        }
+        .view-section.active {
+            display: block;
+        }
+
+        .grid-container {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 2rem;
+            margin-top: 1.5rem;
+        }
+
+        @media (max-width: 900px) {
+            .grid-container { grid-template-columns: 1fr; }
+        }
+
+        .card {
+            background: white;
+            border-radius: 0.5rem;
+            padding: 1.5rem;
+            border: 1px solid var(--border-color);
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+        }
+
+        .card h2 {
+            margin-bottom: 1rem;
+            font-size: 1.25rem;
+            color: #1e293b;
+        }
+
+        /* Tablas */
+        .table-responsive {
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            text-align: left;
+        }
+
+        th, td {
+            padding: 0.75rem 1rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        th {
+            background-color: #f8fafc;
+            color: #64748b;
+            font-weight: 600;
+        }
+
+        /* Formularios */
+        .form-group {
+            margin-bottom: 1.25rem;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+            font-size: 0.875rem;
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 0.625rem 0.75rem;
+            border: 1px solid var(--border-color);
+            border-radius: 0.375rem;
+            font-size: 1rem;
+            outline: none;
+        }
+
+        .form-control:focus {
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(0, 102, 204, 0.15);
+        }
+
+        /* Botones */
+        .btn {
+            display: inline-block;
+            padding: 0.625rem 1.25rem;
+            border-radius: 0.375rem;
+            font-weight: 500;
+            cursor: pointer;
+            border: none;
+            font-size: 0.875rem;
+            transition: background 0.2s;
+        }
+
+        .btn-primary { background-color: var(--primary-color); color: white; }
+        .btn-primary:hover { background-color: var(--primary-dark); }
+        .btn-danger { background-color: var(--error-color); color: white; }
+        .btn-danger:hover { background-color: #dc2626; }
+        .btn-secondary { background-color: #64748b; color: white; }
+        .btn-secondary:hover { background-color: #475569; }
+        .btn-sm { padding: 0.25rem 0.5rem; font-size: 0.75rem; }
+
+        .actions-cell {
+            display: flex;
+            gap: 0.5rem;
+        }
+    </style>
+</head>
+<body>
+
+    <div id="alert-container"></div>
+
+    <aside>
+        <h1>Directorio Académico</h1>
+        <ul class="nav-links">
+            <li><button class="tab-btn active" onclick="switchView('docentes')">Docentes</button></li>
+            <li><button class="tab-btn" onclick="switchView('materias')">Materias</button></li>
+            <li><button class="tab-btn" onclick="switchView('asignaciones')">Asignaciones</button></li>
+        </ul>
+    </aside>
+
+    <main>
+        
+        <section id="view-docentes" class="view-section active">
+            <h2>Gestión de Docentes</h2>
+            <div class="grid-container">
+                <div class="card">
+                    <h2>Lista de Docentes</h2>
+                    <div class="table-responsive">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Nombre</th>
+                                    <th>Email</th>
+                                    <th>Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody id="table-docentes"></tbody>
+                        </table>
+                    </div>
+                </div>
+                <div class="card">
+                    <h2 id="form-docente-title">Agregar Docente</h2>
+                    <form id="form-docente" onsubmit="saveDocente(event)">
+                        <input type="hidden" id="docente-id">
+                        <div class="form-group">
+                            <label for="docente-nombre">Nombre Completo</label>
+                            <input type="text" id="docente-nombre" class="form-control" maxlength="100" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="docente-email">Correo Electrónico</label>
+                            <input type="email" id="docente-email" class="form-control" maxlength="100" required>
+                        </div>
+                        <div class="actions-cell">
+                            <button type="submit" class="btn btn-primary">Guardar</button>
+                            <button type="button" id="btn-cancel-docente" class="btn btn-secondary" style="display:none;" onclick="clearDocenteForm()">Cancelar</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </section>
+
+        <section id="view-materias" class="view-section">
+            <h2>Gestión de Materias</h2>
+            <div class="grid-container">
+                <div class="card">
+                    <h2>Lista de Materias</h2>
+                    <div class="table-responsive">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Clave</th>
+                                    <th>Nombre</th>
+                                    <th>Créditos</th>
+                                    <th>Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody id="table-materias"></tbody>
+                        </table>
+                    </div>
+                </div>
+                <div class="card">
+                    <h2 id="form-materia-title">Agregar Materia</h2>
+                    <form id="form-materia" onsubmit="saveMateria(event)">
+                        <input type="hidden" id="materia-id">
+                        <div class="form-group">
+                            <label for="materia-clave">Clave</label>
+                            <input type="text" id="materia-clave" class="form-control" maxlength="20" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="materia-nombre">Nombre de la Asignatura</label>
+                            <input type="text" id="materia-nombre" class="form-control" maxlength="100" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="materia-creditos">Créditos</label>
+                            <input type="number" id="materia-creditos" class="form-control">
+                        </div>
+                        <div class="actions-cell">
+                            <button type="submit" class="btn btn-primary">Guardar</button>
+                            <button type="button" id="btn-cancel-materia" class="btn btn-secondary" style="display:none;" onclick="clearMateriaForm()">Cancelar</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </section>
+
+        <section id="view-asignaciones" class="view-section">
+            <h2>Asignación de Materias a Docentes</h2>
+            <div class="grid-container">
+                <div class="card">
+                    <h2>Buscar Asignaciones por Docente</h2>
+                    <div class="form-group">
+                        <label for="select-search-docente">Selecciona un Docente</label>
+                        <select id="select-search-docente" class="form-control" onchange="loadAsignacionesPorDocente()">
+                            <option value="">-- Selecciona un docente para ver sus materias --</option>
+                        </select>
+                    </div>
+                    <div class="table-responsive">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Clave Materia</th>
+                                    <th>Nombre Materia</th>
+                                    <th>Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody id="table-asignaciones">
+                                <tr><td colspan="3" style="text-align:center; color:#64748b;">Selecciona un docente para visualizar las asignaturas.</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                <div class="card">
+                    <h2>Nueva Asignación</h2>
+                    <form id="form-asignacion" onsubmit="createAsignacion(event)">
+                        <div class="form-group">
+                            <label for="select-docente">Docente</label>
+                            <select id="select-docente" class="form-control" required></select>
+                        </div>
+                        <div class="form-group">
+                            <label for="select-materia">Materia</label>
+                            <select id="select-materia" class="form-control" required></select>
+                        </div>
+                        <button type="submit" class="btn btn-primary">Vincular Materia</button>
+                    </form>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <script>
+        const API_URL = 'https://jubilant-lamp-wvr6qjqwj6v92g46g-3000.app.github.dev/api/v1';
+
+        // Inicialización de la App al cargar el documento
+        document.addEventListener('DOMContentLoaded', () => {
+            loadDocentes();
+            loadMaterias();
+        });
+
+        // --- SISTEMA DE ALERTAS ---
+        function showAlert(message, type = 'success') {
+            const container = document.getElementById('alert-container');
+            const alert = document.createElement('div');
+            alert.className = `alert ${type}`;
+            alert.innerText = message;
+            container.appendChild(alert);
+            setTimeout(() => alert.remove(), 4000);
+        }
+
+        // --- MANEJO DE NAVEGACIÓN ---
+        function switchView(viewName) {
+            document.querySelectorAll('.view-section').forEach(view => view.classList.remove('active'));
+            document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+            
+            document.getElementById(`view-${viewName}`).classList.add('active');
+            event.target.classList.add('active');
+
+            if (viewName === 'asignaciones') {
+                populateDropdowns();
+            }
+        }
+
+        // --- MANEJO LOGICA: DOCENTES ---
+        async function loadDocentes() {
+            try {
+                const res = await fetch(`${API_URL}/docentes`);
+                if (!res.ok) throw await res.json();
+                const docentes = await res.json();
+                
+                const tbody = document.getElementById('table-docentes');
+                tbody.innerHTML = '';
+                docentes.forEach(d => {
+                    tbody.innerHTML += `
+                        <tr>
+                            <td>${d.id}</td>
+                            <td>${d.nombre}</td>
+                            <td>${d.email}</td>
+                            <td class="actions-cell">
+                                <button class="btn btn-secondary btn-sm" onclick="editDocente(${d.id}, '${d.nombre}', '${d.email}')">Editar</button>
+                                <button class="btn btn-danger btn-sm" onclick="deleteDocente(${d.id})">Eliminar</button>
+                            </td>
+                        </tr>`;
+                });
+            } catch (err) {
+                showAlert(err.message || 'Error al conectar con el servidor.', 'error');
+            }
+        }
+
+        async function saveDocente(e) {
+            e.preventDefault();
+            const id = document.getElementById('docente-id').value;
+            const nombre = document.getElementById('docente-nombre').value;
+            const email = document.getElementById('docente-email').value;
+
+            const payload = { nombre, email };
+            const method = id ? 'PUT' : 'POST';
+            const url = id ? `${API_URL}/docentes/${id}` : `${API_URL}/docentes`;
+
+            try {
+                const res = await fetch(url, {
+                    method,
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+
+                if (!res.ok) throw await res.json();
+
+                showAlert(id ? 'Docente actualizado con éxito.' : 'Docente creado con éxito.');
+                clearDocenteForm();
+                loadDocentes();
+            } catch (err) {
+                showAlert(err.message || 'Error en la petición.', 'error');
+            }
+        }
+
+        function editDocente(id, nombre, email) {
+            document.getElementById('docente-id').value = id;
+            document.getElementById('docente-nombre').value = nombre;
+            document.getElementById('docente-email').value = email;
+            document.getElementById('form-docente-title').innerText = 'Editar Docente';
+            document.getElementById('btn-cancel-docente').style.display = 'inline-block';
+        }
+
+        function clearDocenteForm() {
+            document.getElementById('form-docente').reset();
+            document.getElementById('docente-id').value = '';
+            document.getElementById('form-docente-title').innerText = 'Agregar Docente';
+            document.getElementById('btn-cancel-docente').style.display = 'none';
+        }
+
+        async function deleteDocente(id) {
+            if (!confirm('¿Estás seguro de que deseas eliminar este docente?')) return;
+            try {
+                const res = await fetch(`${API_URL}/docentes/${id}`, { method: 'DELETE' });
+                if (!res.ok) throw await res.json();
+                showAlert('Docente eliminado correctamente.');
+                loadDocentes();
+            } catch (err) {
+                showAlert(err.message || 'No se pudo eliminar el docente.', 'error');
+            }
+        }
+
+        // --- MANEJO LOGICA: MATERIAS ---
+        async function loadMaterias() {
+            try {
+                const res = await fetch(`${API_URL}/materias`);
+                if (!res.ok) throw await res.json();
+                const materias = await res.json();
+                
+                const tbody = document.getElementById('table-materias');
+                tbody.innerHTML = '';
+                materias.forEach(m => {
+                    tbody.innerHTML += `
+                        <tr>
+                            <td>${m.id}</td>
+                            <td>${m.clave}</td>
+                            <td>${m.nombre}</td>
+                            <td>${m.creditos ?? 'N/A'}</td>
+                            <td class="actions-cell">
+                                <button class="btn btn-secondary btn-sm" onclick="editMateria(${m.id}, '${m.clave}', '${m.nombre}', ${m.creditos})">Editar</button>
+                                <button class="btn btn-danger btn-sm" onclick="deleteMateria(${m.id})">Eliminar</button>
+                            </td>
+                        </tr>`;
+                });
+            } catch (err) {
+                showAlert(err.message || 'Error al cargar las materias.', 'error');
+            }
+        }
+
+        async function saveMateria(e) {
+            e.preventDefault();
+            const id = document.getElementById('materia-id').value;
+            const clave = document.getElementById('materia-clave').value;
+            const nombre = document.getElementById('materia-nombre').value;
+            const creditosRaw = document.getElementById('materia-creditos').value;
+            const creditos = creditosRaw !== '' ? parseInt(creditosRaw, 10) : null;
+
+            const payload = { clave, nombre, creditos };
+            const method = id ? 'PUT' : 'POST';
+            const url = id ? `${API_URL}/materias/${id}` : `${API_URL}/materias`;
+
+            try {
+                const res = await fetch(url, {
+                    method,
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+
+                if (!res.ok) throw await res.json();
+
+                showAlert(id ? 'Materia actualizada con éxito.' : 'Materia creada con éxito.');
+                clearMateriaForm();
+                loadMaterias();
+            } catch (err) {
+                showAlert(err.message || 'Error al guardar materia.', 'error');
+            }
+        }
+
+        function editMateria(id, clave, nombre, creditos) {
+            document.getElementById('materia-id').value = id;
+            document.getElementById('materia-clave').value = clave;
+            document.getElementById('materia-nombre').value = nombre;
+            document.getElementById('materia-creditos').value = creditos !== 'null' ? creditos : '';
+            document.getElementById('form-materia-title').innerText = 'Editar Materia';
+            document.getElementById('btn-cancel-materia').style.display = 'inline-block';
+        }
+
+        function clearMateriaForm() {
+            document.getElementById('form-materia').reset();
+            document.getElementById('materia-id').value = '';
+            document.getElementById('form-materia-title').innerText = 'Agregar Materia';
+            document.getElementById('btn-cancel-materia').style.display = 'none';
+        }
+
+        async function deleteMateria(id) {
+            if (!confirm('¿Estás seguro de que deseas eliminar esta materia?')) return;
+            try {
+                const res = await fetch(`${API_URL}/materias/${id}`, { method: 'DELETE' });
+                if (!res.ok) throw await res.json();
+                showAlert('Materia eliminada correctamente.');
+                loadMaterias();
+            } catch (err) {
+                showAlert(err.message || 'No se pudo eliminar la materia.', 'error');
+            }
+        }
+
+        // --- MANEJO LOGICA: RELACIÓN DOCENTE-MATERIA (N:M) ---
+        async function populateDropdowns() {
+            try {
+                const [resDocentes, resMaterias] = await Promise.all([
+                    fetch(`${API_URL}/docentes`),
+                    fetch(`${API_URL}/materias`)
+                ]);
+
+                const docentes = await resDocentes.json();
+                const materias = await resMaterias.json();
+
+                const selectSearch = document.getElementById('select-search-docente');
+                const selectDocente = document.getElementById('select-docente');
+                const selectMateria = document.getElementById('select-materia');
+
+                // Mantener la primera opción por defecto en la caja de búsqueda
+                selectSearch.innerHTML = '<option value="">-- Selecciona un docente para ver sus materias --</option>';
+                selectDocente.innerHTML = '';
+                selectMateria.innerHTML = '';
+
+                docentes.forEach(d => {
+                    const opt = `<option value="${d.id}">${d.nombre} (${d.email})</option>`;
+                    selectSearch.innerHTML += opt;
+                    selectDocente.innerHTML += opt;
+                });
+
+                materias.forEach(m => {
+                    selectMateria.innerHTML += `<option value="${m.id}">${m.clave} - ${m.nombre}</option>`;
+                });
+
+            } catch (err) {
+                showAlert('Ocurrió un problema cargando los elementos de selección.', 'error');
+            }
+        }
+
+        async function loadAsignacionesPorDocente() {
+            const docenteId = document.getElementById('select-search-docente').value;
+            const tbody = document.getElementById('table-asignaciones');
+
+            if (!docenteId) {
+                tbody.innerHTML = '<tr><td colspan="3" style="text-align:center; color:#64748b;">Selecciona un docente para visualizar las asignaturas.</td></tr>';
+                return;
+            }
+
+            try {
+                const res = await fetch(`${API_URL}/docentes/${docenteId}/materias`);
+                if (!res.ok) throw await res.json();
+                const materiasAsignadas = await res.json();
+
+                tbody.innerHTML = '';
+                if (materiasAsignadas.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="3" style="text-align:center; color:#64748b;">Este profesor no cuenta con asignaturas actualmente.</td></tr>';
+                    return;
+                }
+
+                materiasAsignadas.forEach(m => {
+                    tbody.innerHTML += `
+                        <tr>
+                            <td><strong>${m.clave}</strong></td>
+                            <td>${m.nombre}</td>
+                            <td>
+                                <button class="btn btn-danger btn-sm" onclick="deleteAsignacion(${docenteId}, ${m.id})">Desasignar</button>
+                            </td>
+                        </tr>`;
+                });
+            } catch (err) {
+                showAlert(err.message || 'Error al consultar asignaciones.', 'error');
+            }
+        }
+
+        async function createAsignacion(e) {
+            e.preventDefault();
+            const docenteId = document.getElementById('select-docente').value;
+            const materiaId = document.getElementById('select-materia').value;
+
+            try {
+                const res = await fetch(`${API_URL}/docentes/${docenteId}/materias/${materiaId}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' }
+                });
+
+                if (!res.ok) throw await res.json();
+
+                showAlert('Asignación guardada con éxito.');
+                
+                // Si el docente cuya asignación cambió estaba seleccionado en el buscador, refrescar su tabla
+                const currentSearchId = document.getElementById('select-search-docente').value;
+                if (currentSearchId === docenteId) {
+                    loadAsignacionesPorDocente();
+                }
+            } catch (err) {
+                showAlert(err.message || 'Error al procesar la vinculación.', 'error');
+            }
+        }
+
+        async function deleteAsignacion(docenteId, materiaId) {
+            if (!confirm('¿Estás seguro de que deseas retirar esta materia del docente seleccionado?')) return;
+
+            try {
+                const res = await fetch(`${API_URL}/docentes/${docenteId}/materias/${materiaId}`, {
+                    method: 'DELETE'
+                });
+
+                if (!res.ok) throw await res.json();
+
+                showAlert('Materia desasignada de manera correcta.');
+                loadAsignacionesPorDocente();
+            } catch (err) {
+                showAlert(err.message || 'Error al remover la asignación.', 'error');
+            }
+        }
+    </script>
+</body>
+</html>
